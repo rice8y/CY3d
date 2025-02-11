@@ -36,7 +36,8 @@ For Linux and macOS, you can use the provided shell script to install the packag
 \CalabiYau[colormap]{power}{angle}{mesh size}
 ```
 
-Parameters:
+**Parameters:**
+
  - power: The degree (or exponent) of the Calabi-Yau equation z_1^n + z_2^n = 1.
  - angle: The angle parameter to adjust the rotation or perspective of the surface.
  - mesh size: Defines the resolution of the mesh for plotting the surface.

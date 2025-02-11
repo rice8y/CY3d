@@ -1,0 +1,7 @@
+[package]
+name = "cy3d"
+version = "1.0"
+entrypoint = "src/cy3d.sty"
+authors = ["Eito YONEYAMA"]
+license = "BSD 2-Clause"
+description = "A LaTeX package for drawing Calabi-Yau manifold."

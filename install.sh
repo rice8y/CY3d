@@ -8,9 +8,9 @@ get_value_from_toml() {
 }
 
 detect_tex_distribution() {
-    if command -v tlmgr > /dev/null; then
+    if command -v tlmgr > /dev/null 2>&1; then
         TEX_DISTRO="texlive"
-    elif command -v miktex > /dev/null; then
+    elif command -v miktex > /dev/null 2>&1; then
         TEX_DISTRO="miktex"
     else
         echo "No supported TeX distribution found"
@@ -33,16 +33,16 @@ install_package_file() {
     INSTALL_DIR="$TEXMF_PATH/tex/latex/$PACKAGE_NAME"
     
     if [ ! -d "$INSTALL_DIR" ]; then
-        mkdir -p "$INSTALL_DIR"
+        sudo mkdir -p "$INSTALL_DIR"
     fi
-    cp "$PACKAGE_FILE" "$INSTALL_DIR"
+    sudo cp "$PACKAGE_FILE" "$INSTALL_DIR"
     
     case "$TEX_DISTRO" in
         "texlive")
-            sudo mktexlsr
+            sudo PATH=$PATH mktexlsr
             ;;
         "miktex")
-            miktex-console --update-fndb
+            sudo miktex-console --update-fndb
             ;;
     esac
 

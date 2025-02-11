@@ -23,6 +23,7 @@ get_texmf_path() {
         "texlive")
             TEXMF_PATH=$(kpsewhich -var-value=TEXMFLOCAL)
             ;;
+
         "miktex")
             TEXMF_PATH=$(miktex-console --get-settings | grep 'CommonInstall')
             ;;
@@ -39,14 +40,30 @@ install_package_file() {
     
     case "$TEX_DISTRO" in
         "texlive")
-            sudo PATH=$PATH mktexlsr
+            MK_TEXLSR_PATH=$(which mktexlsr)
+            if [ -z "$MK_TEXLSR_PATH" ]; then
+                MK_TEXLSR_PATH="/usr/local/texlive/2024/bin/x86_64-linux/mktexlsr"
+            fi
+
+            if [ -x "$MK_TEXLSR_PATH" ]; then
+                sudo "$MK_TEXLSR_PATH"
+                echo "Package $PACKAGE_NAME version $PACKAGE_VERSION installed successfully!"
+            else
+                echo "mktexlsr not found or not executable."
+                exit 1
+            fi
             ;;
+
         "miktex")
-            sudo miktex-console --update-fndb
+            sudo PATH=$PATH miktex-console --update-fndb
+            if [ $? -eq 0 ]; then
+                echo "Package $PACKAGE_NAME version $PACKAGE_VERSION installed successfully!"
+            else
+                echo "Failed to update MiKTeX file database."
+                exit 1
+            fi
             ;;
     esac
-
-    echo "Package $PACKAGE_NAME version $PACKAGE_VERSION installed successfully!"
 }
 
 main() {

@@ -1,0 +1,89 @@
+%%
+%% This is file `cy3d.sty', part of the cy3d package.
+%%
+%% This package provides a command to visualize the Calabi-Yau manifold using PGFPlots and LuaTeX.
+%% The visualization is based on a complex coordinate transformation and plotted as a 3D surface.
+%% Users can specify parameters such as power, angle, mesh size, and colormap.
+%%
+%% Usage:
+%% \CalabiYau[colormap]{power}{angle}{mesh size}
+%%
+%% Parameters:
+%% - power: The degree (or exponent) of the Calabi-Yau equation z_1^n + z_2^n = 1.
+%% - angle: The angle parameter to adjust the rotation or perspective of the surface.
+%% - mesh size: Defines the resolution of the mesh for plotting the surface.
+%% - colormap (option): Specifies the color scheme used for rendering the surface. 
+%%                      This is based on the TikZ colormap. The default colormap is jet.
+%%
+%% Example usage:
+%% \CalabiYau[cool]{3}{0.5}{0.05}
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{cy3d}[2025/02/12 v1.0 Calabi-Yau manifold using PGFplots]
+\RequirePackage{pgfplots}
+\RequirePackage{luacode}
+\pgfplotsset{compat=newest}
+% Lua Code for Calabi-Yau Visualization
+\begin{luacode*}
+-- Complex number arithmetic library
+Complex = {}
+function Complex.new(re, im) return {re = re, im = im} end
+function Complex.add(a, b) return Complex.new(a.re + b.re, a.im + b.im) end
+function Complex.mul(a, b)
+    return Complex.new(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re)
+end
+function Complex.exp(theta)
+    return Complex.new(math.cos(theta), math.sin(theta))
+end
+function Complex.pow(z, p)
+    local r = math.sqrt(z.re^2 + z.im^2)
+    local theta = math.atan2(z.im, z.re)
+    local rp = r^p
+    local phi = theta * p
+    return Complex.new(rp * math.cos(phi), rp * math.sin(phi))
+end
+function Complex.cos(z)
+    return Complex.new(math.cos(z.re) * math.cosh(z.im), -math.sin(z.re) * math.sinh(z.im))
+end
+function Complex.sin(z)
+    return Complex.new(math.sin(z.re) * math.cosh(z.im), math.cos(z.re) * math.sinh(z.im))
+end
+-- Function to check if the value is an integer
+function is_integer(x)
+    return x == math.floor(x)
+end
+-- Calabi-Yau coordinate transformation
+function coordinate(x, y, n, k1, k2, a)
+    -- Ensure n is an integer
+    if not is_integer(n) then
+        tex.error("Error: Parameter n must be an integer.")
+    end
+
+    local z1 = Complex.mul(Complex.exp(2 * math.pi * k1 / n), Complex.pow(Complex.cos(Complex.new(x, y)), 2 / n))
+    local z2 = Complex.mul(Complex.exp(2 * math.pi * k2 / n), Complex.pow(Complex.sin(Complex.new(x, y)), 2 / n))
+
+    return z1.re, z2.re, z1.im * math.cos(a) + z2.im * math.sin(a)
+end
+-- Calabi-Yau wireframe data generation
+function calabi_yau(n, a, dx, dy)
+    tex.sprint("\\addplot3[surf, mesh/ordering=y varies, shader=flat] coordinates {")
+    for k1 = 0, n - 1 do
+        for k2 = 0, n - 1 do
+            for x = 0, math.pi/2, dx do
+                for y = -math.pi/2, math.pi/2, dy do
+                    local x1, y1, z1 = coordinate(x, y, n, k1, k2, a)
+                    tex.sprint(string.format("(%f, %f, %f)", x1, y1, z1))
+                end
+            end
+        end
+    end
+    tex.sprint("};")
+end
+\end{luacode*}
+% Command to generate Calabi-Yau visualization
+\newcommand{\CalabiYau}[4][jet]{%
+    \begin{tikzpicture}
+        \begin{axis}[hide axis, axis equal, colormap/#1]
+            \directlua{calabi_yau(#2, #3, #4, #4)}
+        \end{axis}
+    \end{tikzpicture}%
+}

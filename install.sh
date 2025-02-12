@@ -42,7 +42,8 @@ install_package_file() {
         "texlive")
             MK_TEXLSR_PATH=$(which mktexlsr)
             if [ -z "$MK_TEXLSR_PATH" ]; then
-                MK_TEXLSR_PATH="/usr/local/texlive/2024/bin/x86_64-linux/mktexlsr"
+                echo "mktexlsr not found or not executable."
+                exit 1
             fi
 
             if [ -x "$MK_TEXLSR_PATH" ]; then

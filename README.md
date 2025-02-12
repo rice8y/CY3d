@@ -2,7 +2,7 @@
 
 This LaTeX package provides a command `\CalabiYau`, which can display Calabi-Yau manifold. This package utilizes PGFplots for drawing Calabi-Yau manifold.
 
-<div style="width: min(60%, 100%); margin: auto; text-align: center;">
+<div style="width: min(50%, 70%); margin: auto; text-align: center;">
     <img src="tests/cy_jet.png" style="display: block; margin: auto; max-width: 100%; height: auto;">
 </div>
 

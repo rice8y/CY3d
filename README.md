@@ -4,7 +4,7 @@ This LaTeX package provides a command `\CalabiYau`, which can display Calabi-Yau
 
 <table style="width: 100%; text-align: center;">
     <tr>
-        <td style="width: 60%; margin: auto;">
+        <td style="width: 30%; margin: auto;">
             <img src="tests/cy_jet.png" style="max-width: 100%; height: auto;">
         </td>
     </tr>

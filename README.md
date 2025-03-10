@@ -1,5 +1,7 @@
 # CY3d
 
+[![Build Status](https://github.com/rice8y/CY3d/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/rice8y/CY3d/actions/workflows/CI.yml?query=branch%3Amain)
+
 This LaTeX package provides a command `\CalabiYau`, which can display Calabi-Yau manifold. This package utilizes PGFplots for drawing Calabi-Yau manifold.
 
 <p align="center" width="100%">

@@ -1,0 +1,21 @@
+name: Build LaTeX Package
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Compile test document
+        uses: dante-ev/latex-action@v2
+        with:
+          root_file: tests/cy_jet.tex
+          compiler: lualatex
+          options: -interaction=nonstopmode

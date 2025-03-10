@@ -16,6 +16,6 @@ jobs:
       - name: Compile test document
         uses: xu-cheng/latex-action@v3
         with:
-          root_file: tests/cy_jet.tex
+          root_file: tests/CI.tex
           compiler: lualatex
           options: -interaction=nonstopmode

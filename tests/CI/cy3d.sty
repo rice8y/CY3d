@@ -1,0 +1,98 @@
+%%
+%% This is file `cy3d.sty', part of the cy3d package.
+%%
+%% This package provides a command to visualize the Calabi-Yau manifold using PGFPlots and LuaTeX.
+%% The visualization is based on a complex coordinate transformation and plotted as a 3D surface.
+%% Users can specify parameters such as power, angle, mesh size, and colormap.
+%%
+%% Usage:
+%% \CalabiYau[colormap]{power}{angle}{mesh size}
+%%
+%% Parameters:
+%% - power: The degree (or exponent) of the Calabi-Yau equation z_1^n + z_2^n = 1.
+%% - angle: The angle parameter to adjust the rotation or perspective of the surface.
+%% - mesh size: Defines the resolution of the mesh for plotting the surface.
+%% - colormap (option): Specifies the color scheme used for rendering the surface. 
+%%                      This is based on the TikZ colormap. The default colormap is jet.
+%%
+%% Example usage:
+%% \CalabiYau[cool]{3}{0.5}{0.05}
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{cy3d}[2025/02/12 v1.0 Calabi-Yau manifold using PGFplots]
+\RequirePackage{pgfplots}
+\RequirePackage{luacode}
+\pgfplotsset{compat=newest}
+% Lua Code for Calabi-Yau Visualization
+\begin{luacode*}
+Complex = {}
+function Complex.new(re, im) return {re = re, im = im} end
+function Complex.add(a, b) return Complex.new(a.re + b.re, a.im + b.im) end
+function Complex.sub(a, b) return Complex.new(a.re - b.re, a.im - b.im) end
+function Complex.mul(a, b)
+    return Complex.new(a.re * b.re - a.im * b.im, a.re * b.im + a.im * b.re)
+end
+function Complex.exp(theta)
+    return Complex.new(math.cos(theta), math.sin(theta))
+end
+function Complex.exp_full(a, b)
+    local r = math.exp(a)
+    return Complex.new(r * math.cos(b), r * math.sin(b))
+end
+function Complex.pow(z, p)
+    local r = math.sqrt(z.re^2 + z.im^2)
+    local theta = math.atan2(z.im, z.re)
+    local rp = r^p
+    local phi = theta * p
+    return Complex.new(rp * math.cos(phi), rp * math.sin(phi))
+end
+
+function u1(a, b)
+    local exp1 = Complex.exp_full(a, b)
+    local exp2 = Complex.exp_full(-a, -b)
+    return Complex.mul(Complex.new(0.5, 0), Complex.add(exp1, exp2))
+end
+function u3(a, b)
+    local exp1 = Complex.exp_full(a, b)
+    local exp2 = Complex.exp_full(-a, -b)
+    return Complex.mul(Complex.new(0.5, 0), Complex.sub(exp1, exp2))
+end
+
+function coordinate(a, b, n, k1, k2, alpha)
+    if n ~= math.floor(n) then
+        tex.error("Error: Parameter n must be an integer.")
+    end
+    local U1 = Complex.pow(u1(a, b), 2/n)
+    local U3 = Complex.pow(u3(a, b), 2/n)
+    local phase1 = Complex.exp(2 * math.pi * k1 / n)
+    local phase2 = Complex.exp(2 * math.pi * k2 / n)
+    local z1 = Complex.mul(phase1, U1)
+    local z2 = Complex.mul(phase2, U3)
+    local x = z1.re
+    local y = z2.re
+    local z = z1.im * math.cos(alpha) + z2.im * math.sin(alpha)
+    return x, y, z
+end
+
+function calabi_yau(n, alpha, grid_step)
+    tex.sprint("\\addplot3[surf, mesh/ordering=y varies, shader=flat] coordinates {")
+    for k1 = 0, n - 1 do
+        for k2 = 0, n - 1 do
+            for a = 0, math.pi/2, grid_step do
+                for b = -math.pi/2, math.pi/2, grid_step do
+                    local x, y, z = coordinate(a, b, n, k1, k2, alpha)
+                    tex.sprint(string.format("(%f, %f, %f)", x, y, z))
+                end
+            end
+        end
+    end
+    tex.sprint("};")
+end
+\end{luacode*}
+
+\newcommand{\CalabiYau}[4][jet]{%
+    \begin{tikzpicture}
+        \begin{axis}[hide axis, axis equal, colormap/#1]
+            \directlua{calabi_yau(#2, #3, #4)}
+        \end{axis}
+    \end{tikzpicture}%
+}

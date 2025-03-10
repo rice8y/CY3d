@@ -16,7 +16,7 @@ jobs:
       - name: Compile test document
         uses: xu-cheng/latex-action@v3
         with:
-          root_file: tests/CI.tex
+          root_file: tests/CI/CI.tex
           work_in_root_file_dir: true
           compiler: lualatex
           args: -interaction=nonstopmode

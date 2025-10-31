@@ -1,7 +1,27 @@
 @echo off
-setlocal
+setlocal enabledelayedexpansion
 
 set "TOML_FILE=package.toml"
+set "INSTALL_SCOPE=local"
+
+if "%~1"=="" goto :parse_done
+:parse_args
+if "%~1"=="--texmflocal" (
+    set "INSTALL_SCOPE=local"
+) else if "%~1"=="--texmfhome" (
+    set "INSTALL_SCOPE=home"
+) else if "%~1"=="-h" (
+    echo Usage: %~nx0 [--texmflocal^|--texmfhome]
+    echo   --texmflocal  Install into TEXMFLOCAL ^(requires admin, default^)
+    echo   --texmfhome   Install into TEXMFHOME ^(user-local tree^)
+    exit /b 0
+) else (
+    echo Unknown option: %~1
+    exit /b 1
+)
+shift
+if not "%~1"=="" goto :parse_args
+:parse_done
 
 for /f "tokens=2 delims== " %%a in ('findstr /C:"name =" "%TOML_FILE%"') do set "PACKAGE_NAME=%%~a"
 for /f "tokens=2 delims== " %%a in ('findstr /C:"version =" "%TOML_FILE%"') do set "PACKAGE_VERSION=%%~a"
@@ -10,7 +30,6 @@ for /f "tokens=2 delims== " %%a in ('findstr /C:"entrypoint =" "%TOML_FILE%"') d
 set "PACKAGE_NAME=%PACKAGE_NAME:"=%"
 set "PACKAGE_VERSION=%PACKAGE_VERSION:"=%"
 set "PACKAGE_FILE=%PACKAGE_FILE:"=%"
-
 set "PACKAGE_FILE=%PACKAGE_FILE:/=\%"
 
 call :detect_tex_distribution
@@ -27,6 +46,7 @@ if "%TEXMF_PATH%"=="" (
 
 call :install_PACKAGE_FILE
 
+echo.
 echo Package %PACKAGE_NAME% version %PACKAGE_VERSION% installed successfully!
 exit /b 0
 
@@ -48,7 +68,11 @@ exit /b 0
 
 :get_texmf_path
 if "%TEX_DISTRO%"=="texlive" (
-    for /f "delims=" %%A in ('kpsewhich -var-value=TEXMFLOCAL') do set "TEXMF_PATH=%%A"
+    if "%INSTALL_SCOPE%"=="home" (
+        for /f "delims=" %%A in ('kpsewhich -var-value=TEXMFHOME') do set "TEXMF_PATH=%%A"
+    ) else (
+        for /f "delims=" %%A in ('kpsewhich -var-value=TEXMFLOCAL') do set "TEXMF_PATH=%%A"
+    )
     exit /b 0
 )
 
@@ -62,20 +86,28 @@ if "%TEX_DISTRO%"=="miktex" (
 set "TEXMF_PATH="
 exit /b 0
 
+
 :install_PACKAGE_FILE
 set "INSTALL_DIR=%TEXMF_PATH%\tex\latex\%PACKAGE_NAME%"
 
 if not exist "%INSTALL_DIR%" (
-    mkdir "%INSTALL_DIR%"
+    mkdir "%INSTALL_DIR%" >nul 2>nul
 )
 
-copy "%PACKAGE_FILE%" "%INSTALL_DIR%"
+copy "%PACKAGE_FILE%" "%INSTALL_DIR%" >nul
 
 if "%TEX_DISTRO%"=="texlive" (
-    mktexlsr
+    if "%INSTALL_SCOPE%"=="home" (
+        echo Installed to TEXMFHOME: %TEXMF_PATH%
+        echo mktexlsr is not needed for TEXMFHOME.
+    ) else (
+        echo Running mktexlsr to refresh file database...
+        mktexlsr
+    )
 )
 
 if "%TEX_DISTRO%"=="miktex" (
+    echo Updating MiKTeX file database...
     miktex-console --update-fndb
 )
 

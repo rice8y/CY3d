@@ -15,26 +15,32 @@ This package requires `pgfplots` and `luacode`. Additionally, since Lua is used 
 ## Installation
 
 To install this package, you can clone the repository from GitHub:
-
 ```bash
 git clone https://github.com/rice8y/cy3d
+cd cy3d
 ```
 
 ### Windows
 
-On Windows, you can simply run the following command to install the package:
-
+On Windows, you can run the batch script with optional flags:
 ```bash
-install
+install.bat [--texmflocal|--texmfhome]
 ```
+
+- `--texmflocal`: Install into TEXMFLOCAL (requires administrator privileges, default)
+- `--texmfhome`: Install into TEXMFHOME (user local tree, no administrator privileges required)
 
 ### Linux/macOS
 
-For Linux and macOS, you can use the provided shell script to install the package:
-
+For Linux and macOS, you can use the shell script with optional flags:
 ```bash
-./install.sh
+./install.sh [--texmflocal|--texmfhome]
 ```
+
+- `--texmflocal`: Install into TEXMFLOCAL (requires sudo, default)
+- `--texmfhome`: Install into TEXMFHOME (user local tree, no sudo required)
+
+**Note:** Installing to TEXMFHOME is recommended for single-user installations as it doesn't require elevated privileges and is automatically indexed by TeX Live without running `mktexlsr`.
 
 ## Usage
 
